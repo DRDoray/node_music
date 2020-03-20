@@ -1,0 +1,32 @@
+<div class="aw-top-menu-wrap">
+  <div class="container">
+      <!-- 用户栏 -->
+      <div class="aw-user-nav">
+          
+        {{if user}}
+            <div>
+              <a href="" class="aw-user-nav-dropdown">
+              {{user.username}},您好!
+              </a>
+              <div class="aw-dropdown dropdown-list pull-right">
+                  <ul class="aw-dropdown-list">
+                      <li><a href="/user/logout"><i class="icon icon-logout"></i> 退出</a></li>
+                  </ul>
+              </div>
+          </div>
+
+        {{else}}
+            <span>
+              <a class="register btn btn-normal btn-success" href="/user/register">注册</a>
+              <a class="login btn btn-normal btn-primary" href="/user/login">登录</a>
+            </span>
+
+        {{/if}}
+
+          <!-- 登陆&注册栏 -->
+
+          <!-- end 登陆&注册栏 -->
+    </div>
+      <!-- end 用户栏 -->
+  </div>
+</div>

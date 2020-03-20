@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的音乐</title>
+  <!-- 引包（包含其他页面include） -->
+  {{ include '../particals/linker.html' }}
+</head>
+<body>
+  <!-- 头部 -->
+  {{ include '../particals/header.html' }}
+
+  <!-- 中部变化（留位置） -->
+  {{ block 'content' }}
+  默认内容
+  {{ /block }}
+
+  <!-- 底部 -->
+  {{ include '../particals/footer.html' }}
+</body>
+</html>
