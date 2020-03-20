@@ -10,5 +10,20 @@ module.exports = {
   updateMusic: async(music) => {
     let musics = await db.q('update music set title=?, singer=?, time=?, filelrc=?, file=?, uid=? where id=?',Object.values(music))
     return musics
+  },
+  // 删除音乐
+  deleteMusicById: async(id) => {
+    let musics = await db.q('delete from music where id = ?',[id])
+    return musics
+  },
+  // 查询音乐
+  findMusicById: async(id) => {
+    let musics = await db.q('select * from music where id = ?', [id])
+    return musics
+  },
+  // 首页查询显示音乐
+  findMusicByUid: async(uid) => {
+    let musics = await db.q('select * from music where uid = ?', [uid])
+    return musics
   }
 }

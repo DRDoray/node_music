@@ -12,7 +12,11 @@ module.exports = {
   },
   // 插入数据
   registerUser: async (...user) => {
-    let users = await db.q('insert into user (username, password, email) values (?,?,?)',user)
+    let users = await db.q('insert into user (username, password, email, v_code) values (?,?,?,?)',user)
+    return users
+  },
+  findUserDataByUsername: async(username) => {
+    let users = await db.q('select * from user where username=?', username)
     return users
   }
 }

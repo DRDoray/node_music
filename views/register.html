@@ -2,16 +2,16 @@
     {{ block 'content'}}
     <style type="text/css">
       #pwd-level div {
-     height: 30px;
-     width: 30px;
-     display: inline-block;
-     float: left;
-    }
-    
-    #pwd-level span {
+        height: 30px;
+        width: 30px;
         display: inline-block;
         float: left;
-    }
+      }
+    
+      #pwd-level span {
+        display: inline-block;
+        float: left;
+      }
     </style>
     <link href="/public/css/register.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript">
@@ -28,13 +28,13 @@
                         <i class="icon icon-delete"></i> <em></em>
                     </li>
                     <li>
-                        <input class="aw-register-name form-control" type="text" name="username" placeholder="用户名" value="" />
+                        <input class="aw-register-name form-control" type="text" id="username" name="username" placeholder="用户名" value="" />
                     </li>
                     <li>
                         <input class="aw-register-email form-control" type="text" placeholder="邮箱" name="email" value="" />
                     </li>
                     <li>
-                        <input class="aw-register-pwd form-control" type="password" name="password" placeholder="密码"  />
+                        <input class="aw-register-pwd form-control" type="password" id="password" name="password" placeholder="密码"  />
                     </li>
                     <div id='pwd-level'>
                         <span>密码强度:</span>
@@ -44,13 +44,13 @@
                     </div>
                     <hr/>
                     <li class="aw-register-verify">
-                        <img class="pull-right" width="120" src="">
-                        <input type="text" class="form-control" name="vcode" placeholder="验证码" />
+                        <img class="pull-right" width="120" src="/user/get-pic" onclick="this.src='/user/get-pic?'+Date.now()">
+                        <input type="text" class="form-control" name="v_code" placeholder="验证码" />
                     </li>
                     <li class="last">
                         <label>
                             <input type="checkbox" checked="checked" value="agree" /> 我同意</label> <a href="javascript:;" class="aw-agreement-btn">用户协议</a>
-                        <a href="/login" class="pull-right">已有账号?</a>
+                        <a href="/user/login" class="pull-right">已有账号?</a>
                         <div class="aw-regiter-agreement hide">
                             <div class="aw-register-agreement-txt" id="register_agreement"></div>
                         </div>
@@ -64,4 +64,96 @@
             </form>
         </div>
     </div>
+    
+    <script type="text/javascript">
+      var checkUsername = (function() {
+        // 节流（延迟半秒发请求）
+        var timer;
+        var prevUsername;
+        // 内部函数对外部函数变量的使用，这个是闭包的典型应用，优点：避免了全局变量
+        return function (e) {
+          // 清空之前的任务
+          clearTimeout(timer)
+          var that = this
+          timer = setTimeout(function(){
+            var username = $(that).val()
+             // 判断上次请求的数据是否完全一致
+            if (prevUsername === username) return
+            console.log(username, 'username')
+            $.ajax({
+              url: '/user/check-username',
+              type: 'post',
+              data: 'username=' + username, // content-type默认是键值对
+              dataType: 'json',
+              success: function(data) {
+                prevUsername = username
+                if (data.code === '001') {
+                  alert('可以注册')
+                } else {
+                  alert('用户名已经存在')
+                }
+              }
+            })
+          },500)
+        }
+      })();
+      // 1.通过is:username查找元素
+      // 2.给元素绑定keyup事件
+      // 3.事件触发接受e.target.value=》即为用户名
+      // 4.异步调用接口
+      $('#username').on('keyup', checkUsername)
+
+      // 验证密码强度的函数
+      function checkPwdLeve(str) {
+        var tpmLevel = 0
+        // 三次级别判断
+        var reg1 = /\d/ // 判断数字
+        var reg2 = /[a-zA-Z]+/ // 判断字母
+        var reg3 = /\W/ // 判断特殊字符
+        if (reg1.test(str)) tpmLevel++
+        if (reg2.test(str)) tpmLevel++
+        if (reg3.test(str)) tpmLevel++
+        return tpmLevel
+      }
+      $('#password').on('keyup', function(e) {
+        // 保存输入的值
+        var pwd = $(this).val()
+        var level = checkPwdLeve(pwd)
+        // 查找这些div
+        var divs = $('#pwd-level').find('div')
+        // 清空背景色
+        for (var i = 0; i < divs.length; i++) {
+          divs[i].style.backgroundColor = ''
+        }
+        // 声明包含所有的颜色
+        var colors = ['yellowgreen', 'skyblue', 'hotpink']
+        for (var i = 0; i < level; i++) {
+          divs[i].style.backgroundColor = colors[i]
+        }
+      })
+
+      // 表单提交
+      $('#register_form').on('submit', function(e) {
+        // 禁止默认提交事件
+        e.preventDefault()
+        var formData = $(this).serialize() // 序列化
+        $.ajax({
+          url: '/user/do-register',
+          type: 'post',
+          data: formData,
+          dataType: 'json',
+          success: function(data) {
+            console.log(data, 'aaa')
+            if (data.code === '001') {
+              // 是否去登陆
+              if (confirm('注册成功，是否去登录?')) {
+                window.location = '/user/login'
+              } 
+            } else {
+              alert('注册失败+'+ data.msg)
+            }
+          }
+        })
+      })
+    </script>
     {{ /block }}

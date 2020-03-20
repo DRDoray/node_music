@@ -8,7 +8,7 @@
                   <div class="content pull-left">
                       <h1 class="logo"><a href=""></a></h1>
                       <h2></h2>
-                      <form action="/" method="post" id="login_form">
+                      <form action="" method="post" id="login_form">
                           <ul>
                               <li>
                                   <input type="text" id="aw-login-user-name" class="form-control" placeholder="用户名" name="username" value="" />
@@ -38,4 +38,28 @@
               </div>
           </div>
       </div>
+      <script type="text/javascript">
+        // 表单提交
+        $('#login_form').on('submit', function(e) {
+          // 禁止默认提交事件
+          e.preventDefault()
+          var formData = $(this).serialize() // 序列化
+          $.ajax({
+            url: '/user/do-login',
+            type: 'post',
+            data: formData,
+            dataType: 'json',
+            success: function(data) {
+              if (data.code === '001') {
+                // 是否去登陆
+                if (confirm('注册成功，是否去听歌?')) {
+                  window.location = '/music/index'
+                } 
+              } else {
+                alert('登录失败:'+ data.msg)
+              }
+            }
+          })
+        })
+      </script>
     {{ /block }}

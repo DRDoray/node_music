@@ -47,6 +47,14 @@ app.keys = ['test'] // 基于test字符串进行签名的运算，目的是保�
 // 处理session
 app.use(session({ store: store }, app))
 
+// 必须在每次请求挂载新的数据与视图的桥梁
+// 在使用session之后哦
+app.use(async(ctx, next) => {
+  ctx.state.user = ctx.session.user
+  // 最终都放行
+  await next()
+})
+
 // 处理请求体数据，通过ctx.resquest.body获取
 // app.use(bodyParser())
 // 处理文件及字符串

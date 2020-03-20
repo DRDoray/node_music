@@ -5,14 +5,12 @@ const musicController = require('../controllers/music')
 musicRouter
 .post('/music/add-music', musicController.addMusic)
 .put('/music/update-music', musicController.updateMusic)
-.get('/music/index', async ctx => {
-  ctx.render('index')
-})
+.delete('/music/delete-music', musicController.deleteMusic)
+.get('/music/edit', musicController.showEdit)
+.get('/music/index', musicController.showIndex)
 .get('/music/add', async ctx => {
   ctx.render('add')
 })
-.get('/music/edit', async ctx => {
-  ctx.render('edit')
-})
+
 
 module.exports = musicRouter

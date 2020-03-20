@@ -1,9 +1,10 @@
 const userModel = require('../models/user')
+const captchapng = require('captchapng2')
 
 module.exports = {
   showRegister: async (ctx, next) => {
     let users = await userModel.getUsers()
-    // ctx.render('register')
+    ctx.render('register')
   },
   // 检查用户名是否存在
   checkUserName: async (ctx, next) => {
@@ -21,7 +22,13 @@ module.exports = {
   },
   // 注册
   doRegister: async (ctx, next) => {
-    let { username, password, email } = ctx.request.body
+    let { username, password, email, v_code } = ctx.request.body
+    // 比较v_code
+    if (v_code !== ctx.session.v_code) {
+      ctx.body = { code: '002',msg: '验证码不正确'}
+      return
+    }
+
     let users = await userModel.findUserByUsername(username)
     // 判断是否存在用户名
     if (users.length !== 0) {
@@ -30,7 +37,7 @@ module.exports = {
     }
     // 开始注册(可以做异常捕获)
     try {
-      let result = await userModel.registerUser(username, password, email)
+      let result = await userModel.registerUser(username, password, email, v_code)
       // 判断是否插入成功， 再给与提示
       if (result.affectedRows === 1) {
         ctx.body = { code: '001', msg: '注册成功'}
@@ -50,7 +57,7 @@ module.exports = {
     let { username, password } = ctx.request.body
     // 2.查询用户名相关的用户
     //   2.1：判断是否有用户，没有用户则提示用户名或者密码不正确，避免黑客等试探用户名的情况，一般模糊提示信息
-    let users = await userModel.findUserByUsername(username)
+    let users = await userModel.findUserDataByUsername(username)
     if (users.length === 0) {
       ctx.body = { code: '002', msg: '用户名或密码错误'}
       return
@@ -68,5 +75,21 @@ module.exports = {
     }
     // 密码不正确
     ctx.body = { code: '002', msg: '用户名或密码不正确'}
+  },
+  // 获取验证码
+  getPic(ctx, next) {
+    // @ts-ignore
+    let rand = parseInt(Math.random() * 9000 + 1000)
+    // 区分不同用户的答案，并分配session，响应cookie
+    ctx.session.v_code = rand + ''
+    let png = new captchapng(80, 30, rand)
+    // @ts-ignore
+    ctx.body = png.getBuffer()
+  },
+  // 退出登录，清除session上的user
+  // 重定向一个页面到login
+  logOut(ctx, next) {
+    ctx.session.user = null
+    ctx.redirect('/user/login')
   }
 }
