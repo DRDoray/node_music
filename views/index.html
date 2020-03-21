@@ -19,11 +19,12 @@
           position: absolute;
           text-align: center;
           padding-top: 60px;
+          left: 26px;
       }
   
       .gl {
-          color: hotpink;
-          background-color: red;
+          /* color: #fff; */
+          background-color: #eee;
       }
       </style>
     <div class="container">
@@ -52,7 +53,7 @@
                             <td>{{ $value.time}}</td>
                             <td><a href="/music/edit?id={{$value.id}}">编辑</a></td>
                             <td><a class="del" href="/music/delete-music?id={{$value.id}}">删除</a></td>
-                            <td><span style="cursor:pointer" src="" class="glyphicon glyphicon-play-circle ply" file="{{$value.flie}}" filelrc="{{$value.flielrc}}"></span></td>
+                            <td><span style="cursor:pointer" src="" class="glyphicon glyphicon-play-circle ply" file="{{$value.file}}" filelrc="{{$value.filelrc}}"></span></td>
                         </tr>
                       {{ /each}}
                     </tbody>
@@ -69,4 +70,96 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+    // 解析歌词函数
+    function parseLrc(str) {
+      var tempObj = {}
+      // [00:00.88]说好不哭
+      // [00:02.25]作词：刘翔 作曲：阿不都拉
+      // [00:03.56]演唱：多亮
+      // 1.以换行符切割字符串（得到的是数组）， \r是mac，\n是linux，windows是\r\n
+      var lines = str.split('\n') // 不同的系统有不同的换行符
+      // 2.遍历该数组，以正则来匹配数据，其中获取到时间和歌词
+      // [00:00.88]说好不哭=》正则匹配
+      var regex = /\[(\d{2})\:(\d{2})\.(\d{2})\](.*)/
+      for (var i=0;i<lines.length;i++) {
+        var line = lines[i]
+        var result = regex.exec(line)
+        // 如果匹配失败，result是null
+        if (!result) continue;
+        // 匹配
+        console.log(result, 'result')
+        var fen = result[1]
+        var miao = result[2] // 毫秒没有匹配
+        var content = result[4]
+        var key = (fen * 60) + (miao - 0) // 保证不是字符串的操作
+        // 3.计算时间作为key，将其与歌词为对象添加属性
+        tempObj[key] = content
+      }
+      // 4.返回这个对象
+      return tempObj
+
+    }
+    // 生成dom对象的函数,obj是个对象
+    function createDOM(obj) {
+      var html = ''
+      for (var time in obj) {
+        html += '<p time="'+time +'">' + obj[time] + '</p>' // 生成歌词dom
+      }
+      // 插入到lrc元素当中
+      $('#lrc').html(html)
+    }
+    // 滚动歌词的函数
+    function srcoll(obj) {
+      // 监听播放事件
+      // qudion的timeupdate事件：获取e.target.currentTime
+      $('#audio').on('timeupdate', function(e) {
+        // console.log(e.target.cuurentTime)
+        // 将秒数四舍五入成一个整数
+        var miao = Math.round(e.target.currentTime)
+        // 判断是否可以滚动,歌词当中有这个秒则可以滚动
+        if (!obj[miao]) return
+        // 滚动逻辑
+        // 1.根据miao找p标签
+        var p = $('#lrc').find('p[time=' + miao + ']') // p[time=1]
+        // 2.把p标签的top值-lrc的top值
+        var minus = $('#lrc').offset().top - p.offset().top
+        // 3.将上一步的差值作为lrc向上移动的距离
+        $('#lrc').animate({
+          top: minus
+        },'slow')
+        // 4.给p标签加样式，并移除其他元素的样式
+        p.addClass('gl').siblings().removeClass('gl')
+      })
+    }
+    // 1.点击后发起请求获取歌词数据
+    $('.ply').on('click', function() {
+      // 获取url，歌曲+歌词
+      var file = $(this).attr('file') // 获取file属性
+      var filelrc = $(this).attr('filelrc') // 获取filelrc属性
+      // 发请求（歌词）
+      $.ajax({
+        url:filelrc,
+        type:'get', // 由于是歌词，所以不加dataType:'json'，因为不是json
+        success: function(res) {
+          console.log(res)
+          // 将歌词解析成对象
+          // 2.解析歌词成为对象
+          var lrcObj = parseLrc(res)
+          // 3.生成不滚动的dom，并留下time标记作为查找元素的依据
+          createDOM(lrcObj)
+          // 4.监听滚动歌词的事件，获取秒数，查找p标签，并根据与lrc之间的top差，让歌词向上移动
+          // 开始滚动歌词
+          srcoll(lrcObj)
+          // 播放歌曲,file为歌曲文件
+          $('#audio').attr('src', file)
+        }
+      })
+    })
+    
+    
+    
+
+    </script>
     {{ /block }}

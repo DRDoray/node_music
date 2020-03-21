@@ -11,5 +11,5 @@ module.exports = {
   },
   viewDir: path.resolve('./views'),
   staticDir: path.resolve('./public'),
-  uploadDir: path.resolve('./public/files')
+  uploadDir: path.resolve('./public/files/')
 }

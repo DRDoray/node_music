@@ -19,14 +19,14 @@ function optUpload(ctx) {
   // 处理歌词路径
   if (filelrc) {
     // path.parse解析文件路径  取的base是文件名+后缀
-    saveSingObj.filelrc = '/public/files' + path.parse(filelrc.path).base
+    saveSingObj.filelrc = '/public/files/' + path.parse(filelrc.path).base
   }
   if (!file) {
     ctx.throw('歌曲必须上传')
     return
   }
   // 处理歌曲路径
-  saveSingObj.file = '/public/files' + path.parse(file.path).base
+  saveSingObj.file = '/public/files/' + path.parse(file.path).base
   // 加入用户id,未来用session
   saveSingObj.uid = 1
   return saveSingObj
