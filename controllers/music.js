@@ -65,7 +65,9 @@ module.exports = {
     let result = await musicModel.deleteMusicById(id)
     if (result.affectedRows === 0) {
       ctx.throw('删除失败：'+result.message)
+      return
     }
+    
     // 响应请求
     ctx.body = { code: '001', msg: '删除成功'}
   },

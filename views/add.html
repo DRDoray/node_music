@@ -1,7 +1,7 @@
     {{ extend './layout/main.html'}}
     {{ block 'content' }}
       <div class="container">
-        <form id="form" method="post" action="/">
+        <form id="form" method="post" action="">
           <div class="form-group">
               <label for="">歌曲编号</label>
               <input type="text" name="id" class="form-control" placeholder="请输入歌曲编号">
@@ -11,19 +11,68 @@
               <input type="text" name="title" class="form-control" placeholder="请输入歌曲标题">
           </div>
           <div class="form-group">
-              <label for="">歌曲时长</label>
-              <input type="text" name="time" class="form-control" placeholder="请输入歌曲时长">
+            <label for="">歌手</label>
+            <input type="text" name="singer" class="form-control" placeholder="请输入歌手姓名">
           </div>
           <div class="form-group">
-              <label for="">歌手</label>
-              <input type="text" name="singer" class="form-control" placeholder="请输入歌手姓名">
+              <label for="">歌曲时长</label>
+              <input type="text" name="time" class="form-control" placeholder="请输入歌曲时长">
           </div>
           <div class="form-group">
               <label for="">歌曲文件</label>
               <input type="file" name="file">
               <p class="help-block">请上传歌曲文件.</p>
           </div>
+          <div class="form-group">
+            <label for="">歌词文件</label>
+            <input type="file" name="filelrc">
+            <p class="help-block">请上传歌词文件.</p>
+        </div>
           <button type="submit" class="btn btn-success">点击添加</button>
         </form>
       </div>
+
+      <script type="text/javascript">
+        // 提交事件
+        $('#form').on('submit', function(e) {
+          e.preventDefault()
+          // var formTextDataStr = $(this).serialize() // 通过表单的name属性获取的序列化,结果格式为：id=xxx&title=xxx&time=xxx&singer=xxx，不能获取文件的数据
+          // FormData 文件的数据提交，也可以获取输入框的数据，所以直接用这个
+          // new FormData.append(key,value)
+          // 获取所有input
+          var inputs = document.querySelectorAll('input')
+          console.log(inputs, 'aaa')
+          var fd = new FormData()
+          // 装载数据
+          fd.append('title', inputs[1].value)
+          fd.append('singer', inputs[2].value)
+          fd.append('time', inputs[3].value)
+          // 传文件对象的方式（files这个属性是原生dom的属性，jq没有该属性）
+          fd.append('file', inputs[4].files[0]) // 是一个文件对象
+          fd.append('filelrc', inputs[5].files[0])
+          // 发请求
+          $.ajax({
+            type: 'post',
+            url: '/music/add-music',
+            data: fd,
+            dataType: 'json',
+            // 报错Uncaught TypeError: Illegal invocation
+            // jq默认的请求头: 键值对的头   => 不要键值对的头 enctype="multipart/form-data"
+            // 不要默认contentType
+            // 解决方式加上如下两个属性
+            contentType: false,
+            processData: false,
+            // jq也会将数据转换成key=value
+            success: function(data) {
+              if (data.code === '001') {
+                if (confirm('添加成功，去听歌？')) {
+                  window.location = '/music/index'
+                }
+              } else {
+                alert(data.msg)
+              }
+            }
+          })
+        })
+      </script>
     {{ /block }}

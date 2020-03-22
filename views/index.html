@@ -49,10 +49,11 @@
                       {{ each musics}}
                         <tr>
                             <td>{{ $value.title}}</td>
-                            <td>{{ $value.singer}}</td>
                             <td>{{ $value.time}}</td>
-                            <td><a href="/music/edit?id={{$value.id}}">编辑</a></td>
-                            <td><a class="del" href="/music/delete-music?id={{$value.id}}">删除</a></td>
+                            <td>{{ $value.singer}}</td>
+                            <td><a href="/music/edit-music?id={{$value.id}}">编辑</a></td>
+                            <!-- <td><a class="del" href="/music/delete-music?id={{$value.id}}">删除</a></td> -->
+                            <td><a class="del" id="delete" data-index="{{$value.id}}" onclick="deleteMusic(this)">删除</a></td>
                             <td><span style="cursor:pointer" src="" class="glyphicon glyphicon-play-circle ply" file="{{$value.file}}" filelrc="{{$value.filelrc}}"></span></td>
                         </tr>
                       {{ /each}}
@@ -72,6 +73,22 @@
     </div>
 
     <script type="text/javascript">
+    function deleteMusic(domDelete) {
+      var id = domDelete.dataset.index;
+      if (confirm('是否删除?')) {
+        $.ajax({
+          type: 'delete',
+          url: '/music/delete-music?id=' + id,
+          dataType: 'json',
+          success: function(data) {
+            if (data.code === '001') {
+              alert('删除成功')
+              window.location.reload()
+            }
+          }
+        })
+      } 
+    }
     // 解析歌词函数
     function parseLrc(str) {
       var tempObj = {}
@@ -157,9 +174,5 @@
         }
       })
     })
-    
-    
-    
-
     </script>
     {{ /block }}

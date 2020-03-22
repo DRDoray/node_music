@@ -9,6 +9,7 @@ let { appPort, viewDir, staticDir, uploadDir } = require('./config')
 const session = require('koa-session')
 const errorInfo = require('./middleware/error')
 const rewirteUrl = require('./middleware/rewirte')
+const checkLogin = require('./middleware/checkLogin')
 
 // 创建服务器
 let app = new Koa()
@@ -46,6 +47,8 @@ let store = {
 app.keys = ['test'] // 基于test字符串进行签名的运算，目的是保证数据不被串改
 // 处理session
 app.use(session({ store: store }, app))
+// 判断某些url访问的时候是否有session的user，即进行权限判断
+app.use(checkLogin)
 
 // 必须在每次请求挂载新的数据与视图的桥梁
 // 在使用session之后哦
